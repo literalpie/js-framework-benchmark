@@ -23,7 +23,7 @@ type BenchState = {
   selected: number | null;
 }
 export const App = component$(() => {
-  const state = useStore<BenchState>({ data: [], selected: null }, { recursive: true});
+  const state = useStore<BenchState>({ data: [], selected: null }, { deep: true });
   return (
     <div class='container'>
       <div class='jumbotron'><div class='row'>

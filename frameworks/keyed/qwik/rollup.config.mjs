@@ -1,6 +1,6 @@
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { qwikRollup } from '@builder.io/qwik/optimizer';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 import { resolve } from 'path';
 
 export default async function () {
@@ -13,15 +13,15 @@ export default async function () {
       nodeResolve({ extensions: [".tsx", ".ts", ".jsx", ".js"], exportConditions: ["min"] }),
       qwikRollup({
         srcDir: resolve('./src'),
-        entryStrategy: {type: 'single' }
+        entryStrategy: { type: 'single' }
       }),
       terser()
     ],
     output:
-      {
-        chunkFileNames: 'q-[hash].js',
-        dir: 'dist',
-        format: 'es',
-      },
+    {
+      chunkFileNames: 'q-[hash].js',
+      dir: 'dist',
+      format: 'es',
+    },
   };
 }

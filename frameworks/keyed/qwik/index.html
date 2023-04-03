@@ -8,95 +8,9 @@
 <body>
 <div id='main' q:base="/frameworks/keyed/qwik/dist/"></div>
 <script>
+  // From QWIK_LOADER in @builder.io/qwik/loader
   // TODO(misko): this should be loaded from URL.
-  !(function () {
-    const qrlResolver = (doc, element, eventUrl, _url, _base) => {
-      if (void 0 === eventUrl) {
-        if (element) {
-          _url = element.getAttribute('q:base');
-          _base = qrlResolver(
-            doc,
-            element.parentNode && element.parentNode.closest('[q\\:base]')
-          );
-        } else {
-          _url = doc.baseURI;
-        }
-      } else if (eventUrl) {
-        _url = eventUrl;
-        _base = qrlResolver(doc, element.closest('[q\\:base]'));
-      }
-      return _url ? new URL(_url, _base) : void 0;
-    };
-    ((doc, hasInitialized) => {
-      const ON_PREFIXES = ['on:', 'on-window:', 'on-document:'];
-      const broadcast = async (infix, type, event) => {
-        type = type.replace(/([A-Z])/g, (a) => '-' + a.toLowerCase());
-        doc
-          .querySelectorAll('[on' + infix + '\\:' + type + ']')
-          .forEach((target) => dispatch(target, type, event));
-      };
-      const dispatch = async (element, eventName, ev, url, previousCtx, attrValue) => {
-        for (const on of ON_PREFIXES) {
-          attrValue = element.getAttribute(on + eventName) || '';
-          for (const qrl of attrValue.split('\n')) {
-            if ((url = qrlResolver(doc, element, qrl))) {
-              const handler = getModuleExport(
-                url,
-                window[url.pathname] || (await import(String(url).split('#')[0]))
-              );
-              previousCtx = document.__q_context__;
-              try {
-                document.__q_context__ = [element, ev, url];
-                handler(element, ev, url);
-              } finally {
-                document.__q_context__ = previousCtx;
-              }
-            }
-          }
-        }
-      };
-      const getModuleExport = (url, module, exportName) =>
-        module[(exportName = url.hash.replace(/^#?([^?[|]*).*$/, '$1') || 'default')] ||
-        ((msg) => {
-          throw new Error('QWIK: ' + msg);
-        })(url + ' does not export ' + exportName);
-      const processEvent = async (ev, element) => {
-        if ((element = ev.target) == doc) {
-          setTimeout(() => broadcast('-document', ev.type, ev));
-        } else {
-          while (element && element.getAttribute) {
-            dispatch(element, ev.type, ev);
-            element = ev.bubbles ? element.parentElement : null;
-          }
-        }
-      };
-      const addEventListener = (eventName) =>
-        doc.addEventListener(eventName, processEvent, {
-          capture: !0,
-        });
-      const processReadyStateChange = (readyState) => {
-        readyState = doc.readyState;
-        if (!hasInitialized && ('interactive' == readyState || 'complete' == readyState)) {
-          hasInitialized = 1;
-          broadcast('', 'q-init', new CustomEvent('qInit'));
-        }
-      };
-      {
-        const scriptTag = doc.querySelector('script[events]');
-        if (scriptTag) {
-          (scriptTag.getAttribute('events') || '').split(/[\s,;]+/).forEach(addEventListener);
-        } else {
-          for (const key in doc) {
-            if (0 == key.indexOf('on')) {
-              addEventListener(key.substring(2));
-            }
-          }
-        }
-      }
-      doc.addEventListener('readystatechange', processReadyStateChange);
-      processReadyStateChange();
-    })(document);
-  })();
+  ((e,t)=>{const n="__q_context__",o=window,i=new Set,s=t=>e.querySelectorAll(t),r=(e,t,n=t.type)=>{s("[on"+e+"\\:"+n+"]").forEach((o=>f(o,e,t,n)))},a=(e,t)=>e.getAttribute(t),l=t=>{if(void 0===t._qwikjson_){let n=(t===e.documentElement?e.body:t).lastElementChild;for(;n;){if("SCRIPT"===n.tagName&&"qwik/json"===a(n,"type")){t._qwikjson_=JSON.parse(n.textContent.replace(/\\x3C(\/?script)/g,"<$1"));break}n=n.previousElementSibling}}},c=(e,t)=>new CustomEvent(e,{detail:t}),f=async(t,o,i,s=i.type)=>{const r="on"+o+":"+s;t.hasAttribute("preventdefault:"+s)&&i.preventDefault();const c=t._qc_,f=null==c?void 0:c.li.filter((e=>e[0]===r));if(f&&f.length>0){for(const e of f)await e[1].getFn([t,i],(()=>t.isConnected))(i,t);return}const d=a(t,r);if(d){const o=t.closest("[q\\:container]"),s=new URL(a(o,"q:base"),e.baseURI);for(const r of d.split("\n")){const a=new URL(r,s),c=a.hash.replace(/^#?([^?[|]*).*$/,"$1")||"default",f=performance.now(),d=import(a.href.split("#")[0]);l(o);const p=b(await d,c),w=e[n];if(t.isConnected)try{e[n]=[t,i,a],u("qsymbol",{symbol:c,element:t,reqTime:f}),await p(i,t)}finally{e[n]=w}}}},u=(t,n)=>{e.dispatchEvent(c(t,n))},b=(e,t)=>{if(t in e)return e[t];for(const n of Object.values(e))if("object"==typeof n&&n&&t in n)return n[t]},d=e=>e.replace(/([A-Z])/g,(e=>"-"+e.toLowerCase())),p=async e=>{let t=d(e.type),n=e.target;for(r("-document",e,t);n&&n.getAttribute;)await f(n,"",e,t),n=e.bubbles&&!0!==e.cancelBubble?n.parentElement:null},w=e=>{r("-window",e,d(e.type))},q=()=>{var n;const r=e.readyState;if(!t&&("interactive"==r||"complete"==r)&&(t=1,u("qinit"),(null!=(n=o.requestIdleCallback)?n:o.setTimeout).bind(o)((()=>u("qidle"))),i.has("qvisible"))){const e=s("[on\\:qvisible]"),t=new IntersectionObserver((e=>{for(const n of e)n.isIntersecting&&(t.unobserve(n.target),f(n.target,"",c("qvisible",n)))}));e.forEach((e=>t.observe(e)))}},v=(e,t,n,o=!1)=>e.addEventListener(t,n,{capture:o}),y=t=>{for(const n of t)i.has(n)||(v(e,n,p,!0),v(o,n,w),i.add(n))};if(!e.qR){const t=o.qwikevents;Array.isArray(t)&&y(t),o.qwikevents={push:(...e)=>y(e)},v(e,"readystatechange",q),q()}})(document)
 </script>
 <script type="module">
   // Because there is no SSR, we have to bootstrap from client.
